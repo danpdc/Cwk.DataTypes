@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cwk.DataTypes.Vector.Exceptions;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -18,6 +19,7 @@ namespace Cwk.DataTypes.Vector
         {
             _elements = elements.ToArray();
             Dimension = _elements.Length;
+            Magnitude = GetMagnitude(_elements);
         }
 
         /// <summary>
@@ -28,11 +30,13 @@ namespace Cwk.DataTypes.Vector
         {
             _elements = elements;
             Dimension = _elements.Length;
+            Magnitude = GetMagnitude(_elements);
         }
         #endregion
 
         #region Public properties
         public int Dimension { get; private set; }
+        public double Magnitude { get; private set; }
 
         public int this[int i]
         {
@@ -60,19 +64,135 @@ namespace Cwk.DataTypes.Vector
             return v1.Equals(v2);
         }
 
-        public override int GetHashCode()
-        {
-            return GetHashCode(this);
-        }
-
         public override bool Equals(object obj)
         {
             if (!(obj is Vector))
                 return false;
 
             var v1 = (Vector)obj;
-            
+
             return Equals(v1);
+        }
+
+        public override int GetHashCode()
+        {
+            return GetHashCode(this);
+        }
+        #endregion
+
+        #region Public mathematical operations
+        
+        /// <summary>
+        ///     Performs vector addition on the current vector with the one provided as a parameter
+        /// </summary>
+        /// <param name="other">The vector that needs to be added to the current vector</param>
+        /// <returns></returns>
+        public Vector Sum(Vector other)
+        {
+            if (Dimension != other.Dimension)
+                throw new VectorAdditionException("The provided vectors can't be added as their dimension doesn't match");
+
+            int[] sum = new int[Dimension];
+
+            for (int i = 0; i < Dimension; i++)
+            {
+                sum[i] = _elements[i] + other[i];
+            }
+
+            return new Vector(sum);
+        }
+
+        /// <summary>
+        /// Performs vector addition on the current vector with the one provided as a parameter
+        /// </summary>
+        /// <param name="v1">First vector to be added</param>
+        /// <param name="v2">Second vector to be added</param>
+        /// <returns></returns>
+        public static Vector Sum(Vector v1, Vector v2)
+        {
+            if (v1.Dimension != v2.Dimension)
+                throw new VectorAdditionException("The provided vectors can't be added as their dimension doesn't match");
+
+            int[] sum = new int[v1.Dimension];
+            for (int i = 0; i < v1.Dimension; i++)
+            {
+                sum[i] = v1[i] + v2[i];
+            }
+
+            return new Vector(sum);
+        }
+
+        /// <summary>
+        /// Multiplies the vector by a scalar value
+        /// </summary>
+        /// <param name="scalar">The scalare used for multiplication</param>
+        /// <returns>a new Vector containing the result of the multiplication</returns>
+        public Vector ScalarMultiplication(int scalar)
+        {
+            int[] products = new int[Dimension];
+            for (int i = 0; i < Dimension; i++)
+            {
+                products[i] = _elements[i] * scalar;
+            }
+
+            return new Vector(products);
+        }
+
+        /// <summary>
+        /// Multiplies a vector by a scalar value
+        /// </summary>
+        /// <param name="v1">The vector to be multiplied</param>
+        /// <param name="scalar">The scalar value to multiply by</param>
+        /// <returns></returns>
+        public static Vector ScalarMultiplication(Vector v1, int scalar)
+        {
+            int[] products = new int[v1.Dimension];
+            for (int i = 0; i < v1.Dimension; i++)
+            {
+                products[i] = v1[i] * scalar;
+            }
+
+            return new Vector(products);
+        }
+
+        /// <summary>
+        /// Multiplies two vectors of the same dimension
+        /// </summary>
+        /// <param name="v2">Second vector for the multiplication</param>
+        /// <returns>A new vector as resulted after the dor product operation</returns>
+        public Vector DotProduct(Vector v2)
+        {
+            if (Dimension != v2.Dimension)
+                throw new VectorAdditionException("The provided vectors can't be added as their dimension doesn't match");
+            int[] products = new int[Dimension];
+
+            for (int i = 0; i < Dimension; i++)
+            {
+                products[i] = _elements[i] * v2[i];
+            }
+
+            return new Vector(products);
+        }
+
+        /// <summary>
+        /// Generates the dot product of two vectors
+        /// </summary>
+        /// <param name="v1">First Vector</param>
+        /// <param name="v2">Second Vector</param>
+        /// <returns></returns>
+        public static Vector DotProduct(Vector v1, Vector v2)
+        {
+            if (v1.Dimension != v2.Dimension)
+                throw new VectorAdditionException("The provided vectors can't be added as their dimension doesn't match");
+
+            int[] products = new int[v2.Dimension];
+
+            for (int i = 0; i < v1.Dimension; i++)
+            {
+                products[i] = v1[i] * v2[i];
+            }
+
+            return new Vector(products);
         }
         #endregion
 
@@ -168,9 +288,31 @@ namespace Cwk.DataTypes.Vector
             return !(v1 == v2);
         }
 
+        public static Vector operator +(Vector v1, Vector v2)
+        {
+            return v1.Sum(v2);
+        }
+
+        public static Vector operator *(Vector v1, Vector v2)
+        {
+            return v1.DotProduct(v2);
+        }
+
         #endregion
 
         #region Private methods
+        private static double GetMagnitude(int[] elements)
+        {
+            double squareSum = 0;
+
+            foreach (var element in elements)
+            {
+                squareSum += Math.Pow(element, 2);
+            }
+
+            var result = Math.Sqrt(squareSum);
+            return Math.Round(result, 3);
+        }
         #endregion
     }
 }
