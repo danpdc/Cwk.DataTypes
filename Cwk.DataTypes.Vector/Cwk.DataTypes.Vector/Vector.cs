@@ -6,16 +6,16 @@ using System.Text;
 
 namespace Cwk.DataTypes.Vector
 {
-    public struct Vector : IEnumerable, IEqualityComparer, IEquatable<Vector>
+    public struct Vector<T> : IEnumerable, IEqualityComparer, IEquatable<Vector<T>>
     {
         #region Fields and constructors
-        private readonly int[] _elements;
+        private readonly T[] _elements;
 
         /// <summary>
         ///     Creates a new vector
         /// </summary>
         /// <param name="elements">A list of integers defining the vector elements</param>
-        public Vector(List<int> elements)
+        public Vector(List<T> elements)
         {
             _elements = elements.ToArray();
             Dimension = _elements.Length;
@@ -26,7 +26,7 @@ namespace Cwk.DataTypes.Vector
         ///     Creates a new vector
         /// </summary>
         /// <param name="elements">An array of int defining the vector elements</param>
-        public Vector(int[] elements)
+        public Vector(T[] elements)
         {
             _elements = elements;
             Dimension = _elements.Length;
@@ -38,7 +38,7 @@ namespace Cwk.DataTypes.Vector
         public int Dimension { get; private set; }
         public double Magnitude { get; private set; }
 
-        public int this[int i]
+        public T this[int i]
         {
             get
             {
@@ -59,17 +59,17 @@ namespace Cwk.DataTypes.Vector
         #endregion
 
         #region Public methods
-        public static bool Equals(Vector v1, Vector v2)
+        public static bool Equals(Vector<T> v1, Vector<T> v2)
         {
             return v1.Equals(v2);
         }
 
         public override bool Equals(object obj)
         {
-            if (!(obj is Vector))
+            if (!(obj is Vector<T>))
                 return false;
 
-            var v1 = (Vector)obj;
+            var v1 = (Vector<T>)obj;
 
             return Equals(v1);
         }
@@ -87,12 +87,12 @@ namespace Cwk.DataTypes.Vector
         /// </summary>
         /// <param name="other">The vector that needs to be added to the current vector</param>
         /// <returns></returns>
-        public Vector Sum(Vector other)
+        public Vector<T> Sum(Vector<T> other)
         {
             if (Dimension != other.Dimension)
                 throw new VectorAdditionException("The provided vectors can't be added as their dimension doesn't match");
 
-            int[] sum = new int[Dimension];
+            T[] sum = new T[Dimension];
 
             for (int i = 0; i < Dimension; i++)
             {
@@ -241,10 +241,10 @@ namespace Cwk.DataTypes.Vector
 
         public int GetHashCode(object obj)
         {
-            if (!(obj is Vector))
+            if (!(obj is Vector<T>))
                 return obj.GetHashCode();
 
-            var v1 = (Vector)obj;
+            var v1 = (Vector<T>)obj;
             int hashSum = 0;
             foreach (var element in v1)
             {
@@ -301,13 +301,14 @@ namespace Cwk.DataTypes.Vector
         #endregion
 
         #region Private methods
-        private static double GetMagnitude(int[] elements)
+        private static double GetMagnitude(T[] elements)
         {
             double squareSum = 0;
 
             foreach (var element in elements)
             {
-                squareSum += Math.Pow(element, 2);
+                var convertedElement = Convert.ToDouble(element);
+                squareSum += Math.Pow(convertedElement, 2);
             }
 
             var result = Math.Sqrt(squareSum);
